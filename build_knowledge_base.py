@@ -39,20 +39,24 @@ RESOLVED_INCIDENTS = [
     # ...
 ]
 
-# Initialise ChromaDB
-chroma_client = chromadb.Client()
-collection = chroma_client.create_collection("noc_knowledge_base")
-model = SentenceTransformer('all-MiniLM-L6-v2')
+def build_collection():
+    chroma_client = chromadb.Client()
+    collection = chroma_client.create_collection("noc_knowledge_base")
+    model = SentenceTransformer('all-MiniLM-L6-v2')
 
-# Indexe tout
-all_docs = RUNBOOKS + RESOLVED_INCIDENTS
-embeddings = model.encode([d["content"] for d in all_docs]).tolist()
+    all_docs = RUNBOOKS + RESOLVED_INCIDENTS
+    embeddings = model.encode([d["content"] for d in all_docs]).tolist()
 
-collection.add(
-    documents=[d["content"] for d in all_docs],
-    embeddings=embeddings,
-    ids=[d["id"] for d in all_docs],
-    metadatas=[{"category": d["category"]} for d in all_docs]
-)
+    collection.add(
+        documents=[d["content"] for d in all_docs],
+        embeddings=embeddings,
+        ids=[d["id"] for d in all_docs],
+        metadatas=[{"category": d["category"]} for d in all_docs]
+    )
 
-print(f"Knowledge base built: {len(all_docs)} documents indexed")
+    print(f"Knowledge base built: {len(all_docs)} documents indexed")
+    return collection
+
+
+if __name__ == "__main__":
+    build_collection()
